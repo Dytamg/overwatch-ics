@@ -1,0 +1,47 @@
+@if (isOpen) {
+  <div (click)="closeNav.emit()" style="position:fixed;inset:0;z-index:40;background:oklch(0.12 0.01 260 / 0.8);backdrop-filter:blur(4px)"></div>
+  <aside style="position:fixed;left:0;top:0;z-index:50;display:flex;flex-direction:column;height:100vh;width:16rem;border-right:1px solid var(--sidebar-border);background:var(--sidebar)">
+    <div style="display:flex;height:4rem;align-items:center;justify-content:space-between;border-bottom:1px solid var(--sidebar-border);padding:0 1rem">
+      <div style="display:flex;align-items:center;gap:0.75rem">
+        <div style="width:2.25rem;height:2.25rem;display:flex;align-items:center;justify-content:center;border-radius:0.5rem;background:oklch(0.75 0.18 160 / 0.1)">🛡</div>
+        <div>
+          <div style="font-family:monospace;font-size:0.875rem;font-weight:700;letter-spacing:0.1em;color:var(--foreground)">OVERWATCH</div>
+          <div style="font-family:monospace;font-size:0.625rem;letter-spacing:0.15em;color:var(--muted-foreground)">ICS MONITOR v2.4</div>
+        </div>
+      </div>
+      <button (click)="closeNav.emit()" style="background:none;border:none;cursor:pointer;color:var(--muted-foreground);font-size:1rem">✕</button>
+    </div>
+    <div style="border-bottom:1px solid var(--sidebar-border);padding:0.75rem 1rem">
+      <div style="display:flex;align-items:center;gap:0.5rem">
+        <span style="width:0.5rem;height:0.5rem;border-radius:9999px;background:var(--status-nominal);display:inline-block"></span>
+        <span style="font-family:monospace;font-size:0.75rem;color:var(--muted-foreground)">SYSTEM OPERATIONAL</span>
+      </div>
+    </div>
+    <nav style="flex:1;padding:1rem 0.5rem;overflow-y:auto">
+      <div style="font-family:monospace;font-size:0.625rem;letter-spacing:0.15em;color:var(--muted-foreground);padding:0 0.5rem;margin-bottom:0.5rem">MAIN VIEWS</div>
+      <!-- FIX: role-gated main items -->
+      @for (item of mainItems; track item.id) {
+        @if (canSee(item.roles)) {
+          <button (click)="selectView(item.id)"
+            [style]="currentView === item.id
+              ? 'display:flex;width:100%;align-items:center;gap:0.75rem;padding:0.625rem 0.75rem;border-radius:0.375rem;background:var(--sidebar-accent);color:var(--primary);font-family:monospace;font-size:0.875rem;border:none;cursor:pointer;margin-bottom:0.25rem'
+              : 'display:flex;width:100%;align-items:center;gap:0.75rem;padding:0.625rem 0.75rem;border-radius:0.375rem;background:none;color:var(--muted-foreground);font-family:monospace;font-size:0.875rem;border:none;cursor:pointer;margin-bottom:0.25rem'">
+            <span>{{ item.icon }}</span>{{ item.label }}
+          </button>
+        }
+      }
+      <div style="font-family:monospace;font-size:0.625rem;letter-spacing:0.15em;color:var(--muted-foreground);padding:0 0.5rem;margin-top:1.5rem;margin-bottom:0.5rem">SYSTEM</div>
+      <!-- FIX: role-gated system items (nodes & settings admin-only) -->
+      @for (item of systemItems; track item.id) {
+        @if (canSee(item.roles)) {
+          <button (click)="selectView(item.id)"
+            [style]="currentView === item.id
+              ? 'display:flex;width:100%;align-items:center;gap:0.75rem;padding:0.625rem 0.75rem;border-radius:0.375rem;background:var(--sidebar-accent);color:var(--primary);font-family:monospace;font-size:0.875rem;border:none;cursor:pointer;margin-bottom:0.25rem'
+              : 'display:flex;width:100%;align-items:center;gap:0.75rem;padding:0.625rem 0.75rem;border-radius:0.375rem;background:none;color:var(--muted-foreground);font-family:monospace;font-size:0.875rem;border:none;cursor:pointer;margin-bottom:0.25rem'">
+            <span>{{ item.icon }}</span>{{ item.label }}
+          </button>
+        }
+      }
+    </nav>
+  </aside>
+}

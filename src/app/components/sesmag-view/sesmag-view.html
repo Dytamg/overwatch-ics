@@ -1,0 +1,142 @@
+<div style="display:flex;flex-direction:column;gap:1.5rem">
+  <!-- Header -->
+  <div style="border-bottom:1px solid var(--border);padding-bottom:1.5rem">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between">
+      <div>
+        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem">
+          <span style="color:var(--primary)">📄</span>
+          <span style="font-family:monospace;font-size:0.625rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--primary)">Technical Documentation</span>
+        </div>
+        <h1 style="font-family:monospace;font-size:1.5rem;font-weight:700;color:var(--foreground);margin-bottom:0.5rem">System Engineering Specifications</h1>
+        <p style="font-family:monospace;font-size:0.875rem;line-height:1.6;color:var(--muted-foreground);max-width:42rem">
+          Comprehensive technical documentation for the OverWatch ICS/SCADA monitoring infrastructure. Compliant with ISA/IEC 62443 standards.
+        </p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0.5rem;flex-shrink:0">
+        <div style="border:1px solid var(--border);background:var(--card);padding:0.5rem 0.75rem;border-radius:0.375rem">
+          <div style="font-family:monospace;font-size:0.625rem;color:var(--muted-foreground)">Document Version</div>
+          <div style="font-family:monospace;font-size:0.875rem;font-weight:500;color:var(--foreground)">v2.4.1 Rev.3</div>
+        </div>
+        <div style="border:1px solid var(--border);background:var(--card);padding:0.5rem 0.75rem;border-radius:0.375rem">
+          <div style="font-family:monospace;font-size:0.625rem;color:var(--muted-foreground)">Last Updated</div>
+          <div style="font-family:monospace;font-size:0.875rem;font-weight:500;color:var(--foreground)">2024-01-15</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Stats -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem">
+    @for (stat of [{icon:'🖥',label:'Servers',value:'24'},{icon:'⚙',label:'PLCs',value:'48'},{icon:'📡',label:'Endpoints',value:'1,247'},{icon:'🛡',label:'Security Level',value:'SL2',primary:true}]; track stat.label) {
+      <div style="border-radius:0.5rem;border:1px solid var(--border);background:var(--card);padding:1rem">
+        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.25rem">
+          <span style="color:var(--primary)">{{ stat.icon }}</span>
+          <span style="font-family:monospace;font-size:0.625rem;text-transform:uppercase;color:var(--muted-foreground)">{{ stat.label }}</span>
+        </div>
+        <p [style]="'font-family:monospace;font-size:1.5rem;font-weight:700;color:' + (stat.primary ? 'var(--primary)' : 'var(--foreground)')">{{ stat.value }}</p>
+      </div>
+    }
+  </div>
+
+  <!-- Architecture -->
+  <section>
+    <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem">
+      <span style="color:var(--primary)">🔀</span>
+      <h2 style="font-family:monospace;font-size:1.125rem;font-weight:600;color:var(--foreground)">System Architecture</h2>
+    </div>
+    <div style="border-radius:0.5rem;border:1px solid var(--border);background:var(--card)">
+      <div style="border-bottom:1px solid var(--border);background:var(--secondary);padding:0.75rem 1rem;display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:0.5rem">
+          <span style="color:var(--primary)">⬡</span>
+          <span style="font-family:monospace;font-size:0.875rem;font-weight:500;color:var(--foreground)">Purdue Model Architecture</span>
+        </div>
+        <span style="font-family:monospace;font-size:0.625rem;color:var(--muted-foreground)">ISA-95 / IEC 62443</span>
+      </div>
+      <div style="padding:1rem;display:flex;flex-direction:column;gap:0.75rem">
+        @for (layer of architectureLayers; track layer.level; let last = $last) {
+          <div style="position:relative">
+            @if (!last) {
+              <div style="position:absolute;left:1.5rem;top:100%;width:1px;height:0.75rem;background:var(--border);z-index:1"></div>
+            }
+            <div style="border:1px solid var(--border);background:var(--secondary);border-radius:0.5rem;padding:0.75rem;transition:border-color 0.2s">
+              <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem">
+                <div style="display:flex;width:3rem;height:1.5rem;align-items:center;justify-content:center;border-radius:0.25rem;background:oklch(0.75 0.18 160 / 0.1)">
+                  <span style="font-family:monospace;font-size:0.625rem;font-weight:500;color:var(--primary)">{{ layer.level }}</span>
+                </div>
+                <span style="font-family:monospace;font-size:0.75rem;font-weight:500;color:var(--foreground)">{{ layer.name }}</span>
+              </div>
+              <p style="font-family:monospace;font-size:0.625rem;line-height:1.5;color:var(--muted-foreground);margin-bottom:0.75rem">{{ layer.description }}</p>
+              <div style="display:flex;flex-wrap:wrap;gap:0.5rem">
+                @for (comp of layer.components; track comp.name) {
+                  <div style="display:flex;align-items:center;gap:0.5rem;border:1px solid var(--border);background:var(--card);padding:0.25rem 0.5rem;border-radius:0.25rem">
+                    <span [style]="'display:inline-block;width:0.375rem;height:0.375rem;border-radius:9999px;background:' + statusDot(comp.status)"></span>
+                    <span style="font-family:monospace;font-size:0.625rem;font-weight:500;color:var(--foreground)">{{ comp.name }}</span>
+                    <span style="font-family:monospace;font-size:0.625rem;color:var(--muted-foreground)">| {{ comp.type }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Legend -->
+        <div style="display:flex;align-items:center;justify-content:flex-end;gap:1rem;border-top:1px solid var(--border);padding-top:0.75rem;margin-top:0.25rem">
+          @for (leg of [{color:'var(--status-nominal)',label:'Active'},{color:'var(--status-warning)',label:'Standby'},{color:'var(--status-offline)',label:'Offline'}]; track leg.label) {
+            <div style="display:flex;align-items:center;gap:0.25rem">
+              <span [style]="'display:inline-block;width:0.5rem;height:0.5rem;border-radius:9999px;background:' + leg.color"></span>
+              <span style="font-family:monospace;font-size:0.625rem;color:var(--muted-foreground)">{{ leg.label }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Hardware Specs -->
+  <section>
+    <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem">
+      <span style="color:var(--primary)">📦</span>
+      <h2 style="font-family:monospace;font-size:1.125rem;font-weight:600;color:var(--foreground)">Hardware Specifications</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+      @for (spec of systemSpecs; track spec.category) {
+        <div style="border-radius:0.5rem;border:1px solid var(--border);background:var(--card)">
+          <div style="border-bottom:1px solid var(--border);background:var(--secondary);padding:0.75rem 1rem">
+            <h3 style="font-family:monospace;font-size:0.875rem;font-weight:500;color:var(--foreground)">{{ spec.category }}</h3>
+          </div>
+          @for (item of spec.items; track item.label) {
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:0.625rem 1rem;border-bottom:1px solid var(--border)">
+              <span style="font-family:monospace;font-size:0.75rem;color:var(--muted-foreground)">{{ item.label }}</span>
+              <span style="font-family:monospace;font-size:0.75rem;font-weight:500;color:var(--foreground)">{{ item.value }}</span>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Compliance -->
+  <section style="border:1px solid oklch(0.75 0.18 160 / 0.3);background:oklch(0.75 0.18 160 / 0.05);border-radius:0.5rem;padding:1.5rem">
+    <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem">
+      <span style="color:var(--primary)">🔒</span>
+      <h2 style="font-family:monospace;font-size:1.125rem;font-weight:600;color:var(--foreground)">Compliance & Certifications</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem">
+      @for (cert of certifications; track cert.cert) {
+        <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);background:var(--card);padding:0.5rem 0.75rem;border-radius:0.375rem">
+          <div>
+            <p style="font-family:monospace;font-size:0.75rem;font-weight:500;color:var(--foreground)">{{ cert.cert }}</p>
+            <p style="font-family:monospace;font-size:0.625rem;color:var(--muted-foreground)">{{ cert.level }}</p>
+          </div>
+          <span style="background:oklch(0.75 0.2 145 / 0.2);color:var(--status-nominal);padding:0.125rem 0.5rem;border-radius:0.25rem;font-family:monospace;font-size:0.625rem">{{ cert.status }}</span>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer style="border-top:1px solid var(--border);padding-top:1.5rem;display:flex;align-items:center;justify-content:space-between">
+    <span style="font-family:monospace;font-size:0.625rem;color:var(--muted-foreground)">Classification: INTERNAL USE ONLY &nbsp;|&nbsp; Document ID: SES-OW-2024-001</span>
+    <button style="font-family:monospace;font-size:0.75rem;color:var(--primary);background:none;border:none;cursor:pointer">Export PDF ↗</button>
+  </footer>
+</div>

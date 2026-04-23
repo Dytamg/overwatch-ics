@@ -1,0 +1,52 @@
+<div style="min-height:100vh;background:var(--background)">
+  <app-mobile-nav
+    [currentView]="currentView" [isOpen]="mobileNavOpen"
+    [userRole]="userRole()"
+    (viewChange)="setView($event)" (closeNav)="mobileNavOpen = false">
+  </app-mobile-nav>
+
+  <div style="display:flex;min-height:100vh">
+    <!-- Desktop Sidebar -->
+    <div class="desktop-sidebar" style="width:16rem;flex-shrink:0">
+      <app-sidebar-nav
+        [currentView]="currentView"
+        [alertCount]="alertCount()"
+        [userRole]="userRole()"
+        [currentUser]="currentUser()"
+        (viewChange)="setView($event)"
+        (logoutClick)="logout()">
+      </app-sidebar-nav>
+    </div>
+
+    <!-- Main -->
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden">
+      <!-- FIX: pass live alertCount() to top-header badge -->
+      <app-top-header [alertCount]="alertCount()" (menuClick)="mobileNavOpen = true"></app-top-header>
+      <main style="flex:1;padding:1.5rem;overflow:auto">
+        @switch (currentView) {
+          @case ('scada')    { <app-scada-dashboard /> }
+          @case ('logs')     { <app-ai-log-analysis /> }
+          @case ('sesmag')   { <app-sesmag-view /> }
+          @case ('health')   { <app-system-health /> }
+          @case ('alerts')   { <app-alerts-panel (unacknowledgedChange)="onAlertCountChange($event)" /> }
+          @case ('nodes')    { @if (isAdmin()) { <app-node-manager /> } }
+          @case ('settings') {
+            @if (isAdmin()) {
+              <app-settings-panel />
+            } @else {
+              <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;gap:1rem">
+                <span style="font-size:3rem">🔒</span>
+                <h2 style="font-family:monospace;font-size:1.25rem;font-weight:700;color:var(--foreground)">Access Restricted</h2>
+                <p style="font-family:monospace;font-size:0.875rem;color:var(--muted-foreground)">Settings require Administrator role.</p>
+                <p style="font-family:monospace;font-size:0.75rem;color:var(--muted-foreground)">Your role: <span style="color:var(--status-warning)">{{ userRole() | uppercase }}</span></p>
+              </div>
+            }
+          }
+        }
+      </main>
+    </div>
+  </div>
+
+  <!-- Floating AI Chatbot — available on all views -->
+  <app-ai-chatbot />
+</div>

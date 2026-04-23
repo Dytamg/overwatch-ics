@@ -1,0 +1,66 @@
+<div style="display:flex;flex-direction:column;gap:1.5rem">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+    <div>
+      <h1 style="font-family:monospace;font-size:1.25rem;font-weight:700;color:var(--foreground)">Alerts</h1>
+      <p style="font-family:monospace;font-size:0.75rem;color:var(--muted-foreground)">{{ unacknowledged }} unacknowledged alerts requiring attention</p>
+    </div>
+    <button (click)="acknowledgeAll()"
+      style="padding:0.5rem 1rem;font-family:monospace;font-size:0.75rem;background:var(--secondary);color:var(--foreground);border:1px solid var(--border);border-radius:0.375rem;cursor:pointer">
+      ✓ Acknowledge All
+    </button>
+  </div>
+
+  <!-- Filter tabs -->
+  <div style="display:flex;gap:0.5rem">
+    @for (f of ['all','critical','warning','info']; track f) {
+      <button (click)="filter = f"
+        [style]="filter === f
+          ? 'padding:0.375rem 0.875rem;font-family:monospace;font-size:0.75rem;background:var(--card);border:1px solid var(--border);border-radius:0.375rem;color:var(--foreground);cursor:pointer'
+          : 'padding:0.375rem 0.875rem;font-family:monospace;font-size:0.75rem;background:none;border:1px solid transparent;border-radius:0.375rem;color:var(--muted-foreground);cursor:pointer'">
+        {{ f | titlecase }}
+        @if (f !== 'all') {
+          <span [style]="'margin-left:4px;padding:0 5px;border-radius:3px;font-size:0.5rem;background:' + typeBg(f) + ';color:' + typeColor(f)">
+            {{ countByType(f) }}
+          </span>
+        }
+      </button>
+    }
+  </div>
+
+  <!-- Alert list -->
+  <div style="display:flex;flex-direction:column;gap:0.75rem">
+    @for (alert of filtered; track alert.id) {
+      <div [style]="'border:1px solid ' + typeColor(alert.type) + (alert.acknowledged ? '40' : '80') + ';background:' + typeBg(alert.type) + ';border-radius:0.5rem;padding:1rem;opacity:' + (alert.acknowledged ? '0.6' : '1')">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem">
+          <div style="display:flex;align-items:flex-start;gap:0.75rem;flex:1">
+            <div [style]="'display:flex;width:2rem;height:2rem;flex-shrink:0;align-items:center;justify-content:center;border-radius:0.375rem;font-size:0.875rem;color:' + typeColor(alert.type)">
+              {{ typeIcon(alert.type) }}
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.25rem;flex-wrap:wrap">
+                <span [style]="'font-family:monospace;font-size:0.625rem;font-weight:600;text-transform:uppercase;color:' + typeColor(alert.type)">{{ alert.type }}</span>
+                <span style="font-family:monospace;font-size:0.625rem;color:var(--muted-foreground)">• {{ alert.source }} • {{ alert.time }}</span>
+                @if (alert.acknowledged) {
+                  <span style="font-family:monospace;font-size:0.625rem;color:var(--status-nominal);background:oklch(0.75 0.2 145 / 0.15);padding:1px 6px;border-radius:3px">✓ ACK</span>
+                }
+              </div>
+              <h3 style="font-family:monospace;font-size:0.875rem;font-weight:600;color:var(--foreground);margin-bottom:0.375rem">{{ alert.title }}</h3>
+              <p style="font-family:monospace;font-size:0.75rem;line-height:1.5;color:var(--muted-foreground)">{{ alert.message }}</p>
+            </div>
+          </div>
+          @if (!alert.acknowledged) {
+            <button (click)="acknowledge(alert.id)"
+              style="flex-shrink:0;padding:0.375rem 0.75rem;font-family:monospace;font-size:0.625rem;background:var(--secondary);color:var(--foreground);border:1px solid var(--border);border-radius:0.375rem;cursor:pointer">
+              Acknowledge
+            </button>
+          }
+        </div>
+      </div>
+    }
+    @if (filtered.length === 0) {
+      <div style="text-align:center;padding:3rem;font-family:monospace;font-size:0.875rem;color:var(--muted-foreground)">
+        ✓ No alerts in this category
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,111 @@
+<div style="display:flex;flex-direction:column;gap:1.5rem">
+  <!-- Header -->
+  <div style="display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between">
+    <div>
+      <h1 style="font-family:monospace;font-size:1.25rem;font-weight:700;letter-spacing:-0.025em;color:var(--foreground)">SCADA Dashboard</h1>
+      <p style="font-family:monospace;font-size:0.75rem;color:var(--muted-foreground)">Real-time ICS node monitoring and status overview</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:0.5rem">
+      <div style="display:flex;align-items:center;gap:0.5rem;border:1px solid var(--border);background:var(--card);padding:0.375rem 0.75rem;border-radius:0.375rem">
+        <span style="position:relative;display:inline-flex;width:0.5rem;height:0.5rem">
+          <span class="animate-ping" style="position:absolute;inset:0;border-radius:9999px;background:var(--status-nominal);opacity:0.75"></span>
+          <span style="position:relative;width:0.5rem;height:0.5rem;border-radius:9999px;background:var(--status-nominal)"></span>
+        </span>
+        <span style="font-family:monospace;font-size:0.75rem;color:var(--muted-foreground)">Live Updates</span>
+      </div>
+      <div style="border:1px solid var(--border);background:var(--card);padding:0.375rem 0.75rem;border-radius:0.375rem">
+        <span style="font-family:monospace;font-size:0.75rem;color:var(--muted-foreground)">{{ nodes().length }} Nodes</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status Overview -->
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0.75rem" class="stats-grid">
+    @for (stat of stats(); track stat.label) {
+      <div style="border-radius:0.5rem;border:1px solid var(--border);background:var(--card);padding:1rem">
+        <div style="display:flex;align-items:center;gap:0.5rem">
+          <div [style]="'display:flex;width:2rem;height:2rem;align-items:center;justify-content:center;border-radius:0.375rem;background:' + statusColor(stat.status) + '20'">
+            <span [style]="'color:' + statusColor(stat.status)">{{ statusIcon(stat.status) }}</span>
+          </div>
+          <div>
+            <p [style]="'font-family:monospace;font-size:1.5rem;font-weight:700;color:' + statusColor(stat.status)">{{ stat.value }}</p>
+            <p style="font-family:monospace;font-size:0.625rem;text-transform:uppercase;color:var(--muted-foreground)">{{ stat.label }}</p>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Node Grid -->
+  <div>
+    <div style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;justify-content:space-between;margin-bottom:1rem">
+      <h2 style="font-family:monospace;font-size:0.875rem;font-weight:500;color:var(--foreground)">ICS Node Status Grid</h2>
+      <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
+        <span style="font-family:monospace;font-size:0.625rem;color:var(--muted-foreground)">Filter:</span>
+        @for (f of filterOptions; track f) {
+          <button (click)="setFilter(f)"
+            [style]="filterStatus() === f
+              ? 'border:1px solid var(--border);background:var(--card);padding:0.25rem 0.5rem;font-family:monospace;font-size:0.625rem;color:var(--foreground);border-radius:0.25rem;cursor:pointer'
+              : 'border:1px solid transparent;background:none;padding:0.25rem 0.5rem;font-family:monospace;font-size:0.625rem;color:var(--muted-foreground);border-radius:0.25rem;cursor:pointer'">
+            {{ f | titlecase }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="node-grid">
+      @for (node of filteredNodes(); track node.id) {
+        <div [class]="node.status === 'critical' ? 'animate-pulse-glow' : ''"
+          [style]="'position:relative;overflow:hidden;border-radius:0.5rem;border:1px solid ' + (node.status === 'critical' ? 'oklch(0.65 0.28 25 / 0.5)' : 'var(--border)') + ';background:var(--card);padding:1rem;transition:border-color 0.2s'">
+
+          <!-- Status bar top -->
+          <div [style]="'position:absolute;top:0;left:0;right:0;height:2px;background:' + statusColor(node.status)"></div>
+
+          <!-- Card header -->
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:0.75rem">
+            <div style="display:flex;align-items:center;gap:0.5rem">
+              <div [style]="'display:flex;width:2rem;height:2rem;align-items:center;justify-content:center;border-radius:0.375rem;background:' + statusColor(node.status) + '20'">
+                <span [style]="'color:' + statusColor(node.status)">{{ typeIcon(node.type) }}</span>
+              </div>
+              <div>
+                <p style="font-family:monospace;font-size:0.75rem;font-weight:500;color:var(--foreground)">{{ node.id }}</p>
+                <p style="font-family:monospace;font-size:0.625rem;color:var(--muted-foreground)">{{ node.type }}</p>
+              </div>
+            </div>
+            <div [class]="node.status === 'critical' ? 'animate-blink-critical' : ''"
+              [style]="'display:flex;align-items:center;gap:0.25rem;padding:0.25rem 0.375rem;border-radius:0.25rem;background:' + statusColor(node.status) + '20'">
+              <span [style]="'font-size:0.625rem;color:' + statusColor(node.status)">{{ statusIcon(node.status) }}</span>
+              <span [style]="'font-family:monospace;font-size:0.625rem;font-weight:500;color:' + statusColor(node.status)">{{ node.status.toUpperCase() }}</span>
+            </div>
+          </div>
+
+          <!-- Name / Location -->
+          <div style="margin-bottom:0.75rem">
+            <h3 style="font-family:monospace;font-size:0.875rem;font-weight:500;color:var(--foreground)">{{ node.name }}</h3>
+            <p style="font-family:monospace;font-size:0.625rem;color:var(--muted-foreground)">{{ node.location }}</p>
+          </div>
+
+          <!-- Metrics -->
+          <div style="display:flex;flex-direction:column;gap:0.375rem">
+            @for (metric of node.metrics; track metric.label) {
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:0.25rem 0.5rem;border-radius:0.25rem;background:oklch(0.22 0.01 260 / 0.5)">
+                <span style="font-family:monospace;font-size:0.625rem;color:var(--muted-foreground)">{{ metric.label }}</span>
+                <div style="display:flex;align-items:center;gap:0.25rem">
+                  <span style="font-family:monospace;font-size:0.75rem;font-weight:500;color:var(--foreground)">{{ metric.value }}</span>
+                  <span style="font-family:monospace;font-size:0.625rem;color:var(--muted-foreground)">{{ metric.unit }}</span>
+                  <span [style]="'font-size:0.625rem;color:' + trendColor(metric.trend)">{{ trendIcon(metric.trend) }}</span>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Footer -->
+          <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);margin-top:0.75rem;padding-top:0.5rem">
+            <span style="font-family:monospace;font-size:0.625rem;color:var(--muted-foreground)">Last Update</span>
+            <span style="font-family:monospace;font-size:0.625rem;color:var(--foreground)">{{ node.lastUpdate }}</span>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>

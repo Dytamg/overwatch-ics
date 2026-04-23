@@ -1,0 +1,117 @@
+<div style="display:flex;flex-direction:column;gap:1.5rem">
+  <div style="display:flex;align-items:center;justify-content:space-between">
+    <div>
+      <h1 style="font-family:monospace;font-size:1.25rem;font-weight:700;color:var(--foreground)">Settings</h1>
+      <p style="font-family:monospace;font-size:0.75rem;color:var(--muted-foreground)">System configuration and preferences</p>
+    </div>
+    @if (saved) {
+      <div style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;border:1px solid var(--status-nominal);background:oklch(0.75 0.2 145 / 0.1);border-radius:0.375rem">
+        <span style="color:var(--status-nominal)">✓</span>
+        <span style="font-family:monospace;font-size:0.75rem;color:var(--status-nominal)">Settings saved</span>
+      </div>
+    }
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+
+    <!-- Facility -->
+    <div style="border:1px solid var(--border);background:var(--card);border-radius:0.5rem;overflow:hidden">
+      <div style="border-bottom:1px solid var(--border);background:var(--secondary);padding:0.75rem 1rem">
+        <h2 style="font-family:monospace;font-size:0.875rem;font-weight:500;color:var(--foreground)">⚙ Facility Configuration</h2>
+      </div>
+      <div style="padding:1rem;display:flex;flex-direction:column;gap:1rem">
+        <div>
+          <label style="display:block;font-family:monospace;font-size:0.75rem;color:var(--muted-foreground);margin-bottom:0.375rem">Facility ID</label>
+          <input [(ngModel)]="settings.facility" style="width:100%;padding:0.5rem 0.75rem;font-family:monospace;font-size:0.875rem;background:var(--input);border:1px solid var(--border);border-radius:0.375rem;color:var(--foreground);outline:none">
+        </div>
+        <div>
+          <label style="display:block;font-family:monospace;font-size:0.75rem;color:var(--muted-foreground);margin-bottom:0.375rem">Compliance Standard</label>
+          <input [(ngModel)]="settings.complianceStandard" style="width:100%;padding:0.5rem 0.75rem;font-family:monospace;font-size:0.875rem;background:var(--input);border:1px solid var(--border);border-radius:0.375rem;color:var(--foreground);outline:none">
+        </div>
+        <div>
+          <label style="display:block;font-family:monospace;font-size:0.75rem;color:var(--muted-foreground);margin-bottom:0.375rem">Session Timeout (minutes)</label>
+          <input type="number" [(ngModel)]="settings.sessionTimeout" style="width:100%;padding:0.5rem 0.75rem;font-family:monospace;font-size:0.875rem;background:var(--input);border:1px solid var(--border);border-radius:0.375rem;color:var(--foreground);outline:none">
+        </div>
+      </div>
+    </div>
+
+    <!-- Display -->
+    <div style="border:1px solid var(--border);background:var(--card);border-radius:0.5rem;overflow:hidden">
+      <div style="border-bottom:1px solid var(--border);background:var(--secondary);padding:0.75rem 1rem">
+        <h2 style="font-family:monospace;font-size:0.875rem;font-weight:500;color:var(--foreground)">🖥 Display & Alerts</h2>
+      </div>
+      <div style="padding:1rem;display:flex;flex-direction:column;gap:1rem">
+        <div>
+          <label style="display:block;font-family:monospace;font-size:0.75rem;color:var(--muted-foreground);margin-bottom:0.375rem">Data Refresh Interval</label>
+          <select [(ngModel)]="settings.refreshInterval" style="width:100%;padding:0.5rem 0.75rem;font-family:monospace;font-size:0.875rem;background:var(--input);border:1px solid var(--border);border-radius:0.375rem;color:var(--foreground);outline:none">
+            @for (opt of refreshOptions; track opt.value) {
+              <option [value]="opt.value">{{ opt.label }}</option>
+            }
+          </select>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem;background:var(--secondary);border-radius:0.375rem">
+          <span style="font-family:monospace;font-size:0.75rem;color:var(--foreground)">Alert Sound</span>
+          <div (click)="settings.alertSoundEnabled = !settings.alertSoundEnabled"
+            [style]="'width:2.5rem;height:1.25rem;border-radius:9999px;cursor:pointer;transition:background 0.2s;background:' + (settings.alertSoundEnabled ? 'var(--primary)' : 'var(--secondary)')">
+            <div [style]="'width:1rem;height:1rem;border-radius:9999px;background:white;margin:0.125rem;transition:transform 0.2s;transform:translateX(' + (settings.alertSoundEnabled ? '1.25rem' : '0') + ')'"></div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem;background:var(--secondary);border-radius:0.375rem">
+          <span style="font-family:monospace;font-size:0.75rem;color:var(--foreground)">Critical Node Blink Animation</span>
+          <div (click)="settings.criticalBlink = !settings.criticalBlink"
+            [style]="'width:2.5rem;height:1.25rem;border-radius:9999px;cursor:pointer;transition:background 0.2s;background:' + (settings.criticalBlink ? 'var(--primary)' : 'var(--secondary)')">
+            <div [style]="'width:1rem;height:1rem;border-radius:9999px;background:white;margin:0.125rem;transition:transform 0.2s;transform:translateX(' + (settings.criticalBlink ? '1.25rem' : '0') + ')'"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Firebase -->
+    <div style="border:1px solid var(--border);background:var(--card);border-radius:0.5rem;overflow:hidden">
+      <div style="border-bottom:1px solid var(--border);background:var(--secondary);padding:0.75rem 1rem">
+        <h2 style="font-family:monospace;font-size:0.875rem;font-weight:500;color:var(--foreground)">🔥 Firebase Integration</h2>
+      </div>
+      <div style="padding:1rem;display:flex;flex-direction:column;gap:1rem">
+        <div>
+          <label style="display:block;font-family:monospace;font-size:0.75rem;color:var(--muted-foreground);margin-bottom:0.375rem">Firebase Project ID</label>
+          <input [(ngModel)]="settings.firebaseProject" placeholder="your-project-id" style="width:100%;padding:0.5rem 0.75rem;font-family:monospace;font-size:0.875rem;background:var(--input);border:1px solid var(--border);border-radius:0.375rem;color:var(--foreground);outline:none">
+        </div>
+        <div style="padding:0.75rem;background:oklch(0.75 0.18 160 / 0.05);border:1px solid oklch(0.75 0.18 160 / 0.2);border-radius:0.375rem">
+          <p style="font-family:monospace;font-size:0.625rem;color:var(--muted-foreground);line-height:1.6">Run <span style="color:var(--primary)">npm install &#64;angular/fire firebase</span> then add your Firebase config to <span style="color:var(--primary)">environment.ts</span></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- LLM -->
+    <div style="border:1px solid var(--border);background:var(--card);border-radius:0.5rem;overflow:hidden">
+      <div style="border-bottom:1px solid var(--border);background:var(--secondary);padding:0.75rem 1rem">
+        <h2 style="font-family:monospace;font-size:0.875rem;font-weight:500;color:var(--foreground)">🧠 AI / LLM Integration</h2>
+      </div>
+      <div style="padding:1rem;display:flex;flex-direction:column;gap:1rem">
+        <div>
+          <label style="display:block;font-family:monospace;font-size:0.75rem;color:var(--muted-foreground);margin-bottom:0.375rem">API Key</label>
+          <input [(ngModel)]="settings.llmApiKey" type="password" placeholder="sk-..." style="width:100%;padding:0.5rem 0.75rem;font-family:monospace;font-size:0.875rem;background:var(--input);border:1px solid var(--border);border-radius:0.375rem;color:var(--foreground);outline:none">
+        </div>
+        <div>
+          <label style="display:block;font-family:monospace;font-size:0.75rem;color:var(--muted-foreground);margin-bottom:0.375rem">Model</label>
+          <select [(ngModel)]="settings.llmModel" style="width:100%;padding:0.5rem 0.75rem;font-family:monospace;font-size:0.875rem;background:var(--input);border:1px solid var(--border);border-radius:0.375rem;color:var(--foreground);outline:none">
+            <option value="gpt-4o">GPT-4o (OpenAI)</option>
+            <option value="gemini-pro">Gemini Pro (Google)</option>
+            <option value="claude-sonnet-4-6">Claude Sonnet 4.6 (Anthropic)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <button (click)="resetDefaults()"
+      style="padding:0.625rem 1.5rem;font-family:monospace;font-size:0.875rem;background:var(--secondary);color:var(--muted-foreground);border:1px solid var(--border);border-radius:0.375rem;cursor:pointer">
+      Reset Defaults
+    </button>
+    <button (click)="saveSettings()"
+      style="padding:0.625rem 1.5rem;font-family:monospace;font-size:0.875rem;font-weight:500;background:var(--primary);color:var(--primary-foreground);border:none;border-radius:0.375rem;cursor:pointer">
+      Save Settings
+    </button>
+  </div>
+</div>

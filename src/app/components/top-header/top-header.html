@@ -1,0 +1,59 @@
+<header style="position:sticky;top:0;z-index:30;display:flex;height:3.5rem;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--background);padding:0 1rem">
+  <!-- Left -->
+  <div style="display:flex;align-items:center;gap:1rem">
+    <button (click)="menuClick.emit()" style="width:2rem;height:2rem;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);background:var(--card);color:var(--muted-foreground);border-radius:0.375rem;cursor:pointer;font-size:1rem">☰</button>
+    <div style="display:flex;align-items:center;gap:0.5rem;border:1px solid var(--border);background:var(--card);padding:0.375rem 0.75rem;border-radius:0.375rem">
+      <span style="color:var(--muted-foreground);font-size:0.875rem">🔍</span>
+      <!-- FIX: two-way bind searchQuery instead of dead input -->
+      <input type="text" [(ngModel)]="searchQuery" placeholder="Search nodes, logs..."
+        style="width:12rem;background:transparent;font-family:monospace;font-size:0.75rem;color:var(--foreground);border:none;outline:none" />
+    </div>
+  </div>
+
+  <!-- Right -->
+  <div style="display:flex;align-items:center;gap:0.75rem">
+    <div style="display:flex;align-items:center;gap:0.5rem;border:1px solid var(--border);background:var(--card);padding:0.375rem 0.75rem;border-radius:0.375rem">
+      <span style="color:var(--status-nominal);font-size:0.75rem">◉</span>
+      <span style="font-family:monospace;font-size:0.625rem;color:var(--muted-foreground)">CONN: 847 | LAT: 12ms</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:0.5rem;border:1px solid var(--border);background:var(--card);padding:0.375rem 0.75rem;border-radius:0.375rem">
+      <span style="color:var(--primary);font-size:0.75rem">⏱</span>
+      <span style="font-family:monospace;font-size:0.75rem;color:var(--foreground)">{{ currentTime }}</span>
+      <span style="font-family:monospace;font-size:0.625rem;color:var(--muted-foreground)">UTC</span>
+    </div>
+
+    <!-- Alerts bell -->
+    <div style="position:relative">
+      <button (click)="showAlerts = !showAlerts"
+        style="position:relative;width:2rem;height:2rem;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);background:var(--card);border-radius:0.375rem;cursor:pointer;font-size:0.875rem">
+        🔔
+        <!-- FIX: badge uses visibleAlertCount (driven by Input) -->
+        @if (visibleAlertCount > 0) {
+          <span style="position:absolute;top:-0.25rem;right:-0.25rem;min-width:1rem;height:1rem;display:flex;align-items:center;justify-content:center;background:var(--destructive);border-radius:9999px;font-family:monospace;font-size:0.625rem;color:var(--destructive-foreground);padding:0 2px">{{ visibleAlertCount }}</span>
+        }
+      </button>
+
+      @if (showAlerts) {
+        <div style="position:absolute;right:0;top:calc(100% + 0.5rem);width:20rem;border:1px solid var(--border);background:var(--card);border-radius:0.5rem;box-shadow:0 20px 40px rgba(0,0,0,0.4);z-index:50">
+          <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);padding:0.75rem 1rem">
+            <span style="font-family:monospace;font-size:0.875rem;font-weight:500;color:var(--foreground)">⚠ Active Alerts</span>
+            <button (click)="showAlerts = false" style="background:none;border:none;cursor:pointer;color:var(--muted-foreground)">✕</button>
+          </div>
+          @for (alert of alerts; track alert.id) {
+            <div [style]="'padding:0.75rem 1rem;border-bottom:1px solid var(--border);' + (alert.type === 'critical' ? 'background:oklch(0.65 0.25 25 / 0.05)' : '')">
+              <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.25rem">
+                <span [style]="'width:0.5rem;height:0.5rem;border-radius:9999px;display:inline-block;background:' + (alert.type === 'critical' ? 'var(--status-critical)' : 'var(--status-warning)')"></span>
+                <span [style]="'font-family:monospace;font-size:0.625rem;text-transform:uppercase;color:' + (alert.type === 'critical' ? 'var(--status-critical)' : 'var(--status-warning)')">{{ alert.type }}</span>
+                <span style="margin-left:auto;font-family:monospace;font-size:0.625rem;color:var(--muted-foreground)">{{ alert.time }}</span>
+              </div>
+              <p style="font-family:monospace;font-size:0.75rem;color:var(--foreground)">{{ alert.message }}</p>
+            </div>
+          }
+          <div style="padding:0.5rem 1rem">
+            <button style="width:100%;padding:0.375rem;font-family:monospace;font-size:0.75rem;background:var(--secondary);color:var(--foreground);border:none;border-radius:0.375rem;cursor:pointer">View All Alerts</button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</header>

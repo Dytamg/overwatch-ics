@@ -1,0 +1,148 @@
+<div style="position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:var(--background)">
+  <!-- Grid background -->
+  <div style="position:absolute;inset:0;overflow:hidden;pointer-events:none">
+    <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(0,255,200,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,200,0.03) 1px,transparent 1px);background-size:50px 50px"></div>
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 20% 50%,oklch(0.75 0.18 160 / 0.05) 0%,transparent 50%)"></div>
+  </div>
+
+  <!-- Top left badges -->
+  <div style="position:absolute;left:2rem;top:2rem;display:flex;flex-direction:column;gap:0.5rem">
+    <div style="display:flex;align-items:center;gap:0.5rem;border:1px solid var(--border);background:var(--card);padding:0.5rem 0.75rem;border-radius:0.5rem">
+      <span style="position:relative;display:inline-flex;width:0.5rem;height:0.5rem">
+        <span class="animate-ping" style="position:absolute;inset:0;border-radius:9999px;background:var(--status-nominal);opacity:0.75"></span>
+        <span style="position:relative;width:0.5rem;height:0.5rem;border-radius:9999px;background:var(--status-nominal)"></span>
+      </span>
+      <span style="font-family:monospace;font-size:0.625rem;color:var(--muted-foreground)">SYSTEM ONLINE</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:0.5rem;border:1px solid var(--border);background:var(--card);padding:0.5rem 0.75rem;border-radius:0.5rem">
+      <span style="font-family:monospace;font-size:0.625rem;color:var(--muted-foreground)">⚡ 48 NODES ACTIVE</span>
+    </div>
+  </div>
+
+  <!-- Top right badges -->
+  <div style="position:absolute;right:2rem;top:2rem;display:flex;flex-direction:column;gap:0.5rem">
+    <div style="display:flex;align-items:center;gap:0.5rem;border:1px solid var(--border);background:var(--card);padding:0.5rem 0.75rem;border-radius:0.5rem">
+      <span style="font-family:monospace;font-size:0.625rem;color:var(--muted-foreground)">🛡 IEC 62443 COMPLIANT</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:0.5rem;border:1px solid var(--border);background:var(--card);padding:0.5rem 0.75rem;border-radius:0.5rem">
+      <span style="font-family:monospace;font-size:0.625rem;color:var(--status-nominal)">🔒 TLS 1.3 ENCRYPTED</span>
+    </div>
+  </div>
+
+  <!-- Login Card -->
+  <div style="position:relative;width:100%;max-width:28rem;padding:1rem">
+    <div style="border-radius:0.5rem;border:1px solid var(--border);background:var(--card);box-shadow:0 25px 50px oklch(0.75 0.18 160 / 0.05)">
+      <!-- Header -->
+      <div style="border-bottom:1px solid var(--border);padding:1.5rem">
+        <div style="display:flex;flex-direction:column;align-items:center;text-align:center">
+          <div style="margin-bottom:1rem;width:4rem;height:4rem;display:flex;align-items:center;justify-content:center;border-radius:0.5rem;border:1px solid oklch(0.75 0.18 160 / 0.3);background:oklch(0.75 0.18 160 / 0.1)">
+            <span style="font-size:2rem">🛡</span>
+          </div>
+          <h1 style="font-family:monospace;font-size:1.25rem;font-weight:700;letter-spacing:-0.025em;color:var(--foreground);margin-bottom:0.25rem">Login to OverWatch</h1>
+          <p style="font-family:monospace;font-size:0.75rem;color:var(--muted-foreground)">ICS/SCADA Security Operations Center</p>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div style="padding:1.5rem">
+        <!-- Error -->
+        @if (error) {
+          <div style="display:flex;align-items:center;gap:0.5rem;border:1px solid oklch(0.65 0.25 25 / 0.3);background:oklch(0.65 0.25 25 / 0.1);padding:0.5rem 0.75rem;border-radius:0.375rem;margin-bottom:1rem">
+            <span style="font-size:1rem">⚠️</span>
+            <span style="font-family:monospace;font-size:0.75rem;color:var(--destructive)">{{ error }}</span>
+          </div>
+        }
+
+        <!-- Email -->
+        <div style="margin-bottom:1rem">
+          <label style="display:block;font-family:monospace;font-size:0.75rem;font-weight:500;color:var(--foreground);margin-bottom:0.5rem">Email Address</label>
+          <div style="position:relative">
+            <span style="position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);color:var(--muted-foreground)">✉</span>
+            <input type="email" [(ngModel)]="email" placeholder="admin@sector7g.local"
+              style="width:100%;padding:0.625rem 0.75rem 0.625rem 2.25rem;font-family:monospace;font-size:0.875rem;background:var(--input);border:1px solid var(--border);border-radius:0.375rem;color:var(--foreground);outline:none"
+              (focus)="$event.target.style.borderColor='var(--primary)'"
+              (blur)="$event.target.style.borderColor='var(--border)'" />
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div style="margin-bottom:1rem">
+          <label style="display:block;font-family:monospace;font-size:0.75rem;font-weight:500;color:var(--foreground);margin-bottom:0.5rem">Password</label>
+          <div style="position:relative">
+            <span style="position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);color:var(--muted-foreground)">🔒</span>
+            <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" placeholder="Enter secure password"
+              style="width:100%;padding:0.625rem 2.5rem 0.625rem 2.25rem;font-family:monospace;font-size:0.875rem;background:var(--input);border:1px solid var(--border);border-radius:0.375rem;color:var(--foreground);outline:none"
+              (focus)="$event.target.style.borderColor='var(--primary)'"
+              (blur)="$event.target.style.borderColor='var(--border)'" />
+            <button type="button" (click)="showPassword = !showPassword"
+              style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted-foreground);font-size:0.875rem">
+              {{ showPassword ? '🙈' : '👁' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <button (click)="handleSubmit()" [disabled]="isLoading"
+          style="width:100%;display:flex;align-items:center;justify-content:center;gap:0.5rem;padding:0.75rem;font-family:monospace;font-size:0.875rem;font-weight:500;background:var(--primary);color:var(--primary-foreground);border:none;border-radius:0.375rem;cursor:pointer;transition:opacity 0.2s"
+          [style.opacity]="isLoading ? '0.6' : '1'">
+          @if (isLoading) {
+            <span class="animate-spin" style="display:inline-block;width:1rem;height:1rem;border:2px solid transparent;border-top-color:currentColor;border-radius:9999px"></span>
+            <span>Authenticating...</span>
+          } @else {
+            <span>🛡</span>
+            <span>Secure Login</span>
+          }
+        </button>
+      </div>
+
+      <!-- Footer -->
+      <div style="border-top:1px solid var(--border);padding:1rem 1.5rem">
+        <div style="display:flex;align-items:center;justify-content:center;gap:1rem">
+          <span style="font-family:monospace;font-size:0.625rem;color:var(--muted-foreground)">
+            <span style="display:inline-block;width:0.375rem;height:0.375rem;border-radius:9999px;background:var(--status-nominal);margin-right:0.25rem"></span>Auth Server
+          </span>
+          <span style="color:var(--border)">|</span>
+          <span style="font-family:monospace;font-size:0.625rem;color:var(--muted-foreground)">
+            <span style="display:inline-block;width:0.375rem;height:0.375rem;border-radius:9999px;background:var(--status-nominal);margin-right:0.25rem"></span>LDAP Connected
+          </span>
+          <span style="color:var(--border)">|</span>
+          <span style="font-family:monospace;font-size:0.625rem;color:var(--muted-foreground)">
+            <span style="display:inline-block;width:0.375rem;height:0.375rem;border-radius:9999px;background:var(--status-nominal);margin-right:0.25rem"></span>MFA Ready
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:1rem;text-align:center">
+      <p style="font-family:monospace;font-size:0.625rem;color:var(--muted-foreground)">Authorized personnel only. All access is logged and monitored.</p>
+      <p style="font-family:monospace;font-size:0.625rem;color:var(--muted-foreground);margin-top:0.25rem">Session ID: {{ sessionId }}</p>
+    </div>
+
+    <!-- Dev credential hints -->
+    <div style="margin-top:1.25rem;border:1px solid oklch(0.25 0.02 260);border-radius:0.5rem;background:oklch(0.11 0.01 260);padding:0.75rem 1rem">
+      <div style="font-family:monospace;font-size:0.5625rem;font-weight:700;letter-spacing:0.15em;color:var(--muted-foreground);margin-bottom:0.5rem">◈ TEST ACCOUNTS</div>
+      @for (acct of devAccounts; track acct.email) {
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:0.25rem 0;border-bottom:1px solid oklch(0.18 0.01 260)">
+          <div style="display:flex;align-items:center;gap:0.5rem">
+            <span [style]="'font-family:monospace;font-size:0.5rem;font-weight:700;padding:1px 5px;border-radius:3px;background:' + acct.color + '20;color:' + acct.color">{{ acct.role }}</span>
+            <span style="font-family:monospace;font-size:0.625rem;color:var(--foreground)">{{ acct.email }}</span>
+          </div>
+          <button (click)="fillCredentials(acct.email)"
+            style="font-family:monospace;font-size:0.5rem;padding:2px 6px;background:var(--secondary);border:1px solid var(--border);border-radius:3px;color:var(--muted-foreground);cursor:pointer"
+            onmouseover="this.style.color='var(--foreground)'" onmouseout="this.style.color='var(--muted-foreground)'">
+            USE
+          </button>
+        </div>
+      }
+      <div style="font-family:monospace;font-size:0.5rem;color:var(--muted-foreground);margin-top:0.375rem;text-align:center">Password: 12345678</div>
+    </div>
+  </div>
+
+  <!-- Bottom Bar -->
+  <div style="position:absolute;bottom:0;left:0;right:0;border-top:1px solid var(--border);background:var(--card);padding:0.5rem 1rem">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <span style="font-family:monospace;font-size:0.625rem;color:var(--muted-foreground)">OverWatch v2.4.1 | Facility: SECTOR-7G</span>
+      <span style="font-family:monospace;font-size:0.625rem;color:var(--muted-foreground)">{{ currentDate }} {{ currentTime }}</span>
+    </div>
+  </div>
+</div>
