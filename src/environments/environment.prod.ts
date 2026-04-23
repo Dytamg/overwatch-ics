@@ -1,5 +1,6 @@
 export const environment = {
-  production: false,
+  production: true,
+  geminiApiKey: 'AIzaSyCLTQHgFelzqPf2YpuwZFLfrUvgzZejGwc',
   firebase: {
     apiKey: "AIzaSyDK3rA5PpZ7qf5YW9gy7Ld_2gfUZ4J1xiE",
     authDomain: "scada-c0865.firebaseapp.com",

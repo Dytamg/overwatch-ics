@@ -1,10 +1,11 @@
 import {
   Component, OnInit, OnDestroy, ViewChild, ElementRef,
-  AfterViewChecked, signal, computed
+  AfterViewChecked, signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FormatChatPipe } from '../../pipes/format-chat.pipe';
+import { environment } from '../../../environments/environment';
 
 export interface ChatMessage {
   id: string;
@@ -37,15 +38,16 @@ Context: You are integrated into a live SOC dashboard monitoring 48 ICS nodes ac
 })
 export class AiChatbotComponent implements OnInit, OnDestroy, AfterViewChecked {
   @ViewChild('messagesEnd') messagesEnd!: ElementRef;
-  @ViewChild('inputRef') inputRef!: ElementRef<HTMLTextAreaElement>;
+  @ViewChild('inputRef')    inputRef!:    ElementRef<HTMLTextAreaElement>;
 
-  private readonly API_KEY = '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';
-  private readonly MODEL = 'gpt-4o-mini';
+  private readonly API_KEY = environment.geminiApiKey;
+  // Gemini 2.0 Flash — fast, free-tier generous, supports streaming
+  private readonly MODEL = 'gemini-2.5-flash';
 
-  isOpen = signal(false);
+  isOpen      = signal(false);
   isMinimized = signal(false);
-  isLoading = signal(false);
-  inputText = '';
+  isLoading   = signal(false);
+  inputText   = '';
   private shouldScroll = false;
 
   messages = signal<ChatMessage[]>([
@@ -57,12 +59,6 @@ export class AiChatbotComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
   ]);
 
-  conversationHistory = computed(() =>
-    this.messages()
-      .filter(m => m.role !== 'system' && !m.isStreaming)
-      .map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }))
-  );
-
   suggestedPrompts = [
     'Explain the MODBUS threat detected',
     'What is TRITON malware?',
@@ -71,7 +67,7 @@ export class AiChatbotComponent implements OnInit, OnDestroy, AfterViewChecked {
     'How to isolate a compromised RTU?',
   ];
 
-  ngOnInit() {}
+  ngOnInit()    {}
   ngOnDestroy() {}
 
   ngAfterViewChecked() {
@@ -82,28 +78,24 @@ export class AiChatbotComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   toggleChat() {
-    if (this.isMinimized()) {
-      this.isMinimized.set(false);
-    } else {
-      this.isOpen.update(v => !v);
-    }
+    if (this.isMinimized()) this.isMinimized.set(false);
+    else this.isOpen.update(v => !v);
     if (this.isOpen()) {
       setTimeout(() => this.inputRef?.nativeElement?.focus(), 100);
     }
   }
 
-  minimizeChat() {
-    this.isMinimized.set(true);
-  }
-
-  closeChat() {
-    this.isOpen.set(false);
-    this.isMinimized.set(false);
-  }
+  minimizeChat() { this.isMinimized.set(true); }
+  closeChat()    { this.isOpen.set(false); this.isMinimized.set(false); }
 
   useSuggestion(prompt: string) {
     this.inputText = prompt;
     this.sendMessage();
+  }
+
+  // Compatible ID generator — works on http://, https://, and all browsers
+  private makeId(): string {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 11);
   }
 
   async sendMessage() {
@@ -113,78 +105,83 @@ export class AiChatbotComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.inputText = '';
     this.isLoading.set(true);
 
-    // Add user message
+    // Snapshot history BEFORE adding new messages (prevents race with streaming placeholder)
+    const history = this.messages()
+      .filter(m => m.id !== 'welcome' && !m.isStreaming && m.content.trim())
+      .map(m => ({
+        role: m.role === 'assistant' ? 'model' : 'user',  // Gemini uses 'model' not 'assistant'
+        parts: [{ text: m.content }]
+      }));
+
+    // Append user message
     const userMsg: ChatMessage = {
-      id: crypto.randomUUID(),
-      role: 'user',
-      content,
-      timestamp: new Date()
+      id: this.makeId(), role: 'user', content, timestamp: new Date()
     };
     this.messages.update(msgs => [...msgs, userMsg]);
     this.shouldScroll = true;
 
-    // Add placeholder assistant message
-    const assistantId = crypto.randomUUID();
-    const assistantMsg: ChatMessage = {
-      id: assistantId,
-      role: 'assistant',
-      content: '',
-      timestamp: new Date(),
-      isStreaming: true
-    };
-    this.messages.update(msgs => [...msgs, assistantMsg]);
+    // Append streaming placeholder
+    const assistantId = this.makeId();
+    this.messages.update(msgs => [...msgs, {
+      id: assistantId, role: 'assistant', content: '',
+      timestamp: new Date(), isStreaming: true
+    }]);
 
     try {
-      const history = this.conversationHistory().slice(0, -1); // exclude the placeholder
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.MODEL}:streamGenerateContent?alt=sse&key=${this.API_KEY}`;
 
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      const response = await fetch(url, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.API_KEY}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: this.MODEL,
-          messages: [
-            { role: 'system', content: SYSTEM_PROMPT },
+          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          contents: [
             ...history,
-            { role: 'user', content }
+            { role: 'user', parts: [{ text: content }] }
           ],
-          stream: true,
-          max_tokens: 800,
-          temperature: 0.7
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 800,
+          },
         })
       });
 
       if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error?.message || `API error ${response.status}`);
+        const errorText = await response.text();
+        console.error('[ARIA] Gemini error body:', errorText);
+        let errMsg = `API ${response.status}`;
+        try {
+          const parsed = JSON.parse(errorText);
+          errMsg = parsed.error?.message || errMsg;
+        } catch {}
+        throw new Error(errMsg);
       }
 
-      const reader = response.body!.getReader();
+      const reader  = response.body!.getReader();
       const decoder = new TextDecoder();
       let accumulated = '';
+      let buffer = '';
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n').filter(l => l.startsWith('data: '));
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? '';
 
         for (const line of lines) {
-          const data = line.slice(6);
-          if (data === '[DONE]') break;
+          const trimmed = line.trim();
+          if (!trimmed.startsWith('data: ')) continue;
+          const data = trimmed.slice(6);
+          if (!data) continue;
           try {
             const parsed = JSON.parse(data);
-            const delta = parsed.choices?.[0]?.delta?.content;
+            const delta  = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
             if (delta) {
               accumulated += delta;
               this.messages.update(msgs =>
-                msgs.map(m => m.id === assistantId
-                  ? { ...m, content: accumulated }
-                  : m
-                )
+                msgs.map(m => m.id === assistantId ? { ...m, content: accumulated } : m)
               );
               this.shouldScroll = true;
             }
@@ -198,9 +195,10 @@ export class AiChatbotComponent implements OnInit, OnDestroy, AfterViewChecked {
       );
 
     } catch (err: any) {
+      console.error('[ARIA] Error:', err);
       this.messages.update(msgs =>
         msgs.map(m => m.id === assistantId
-          ? { ...m, content: `⚠ Error: ${err.message || 'Failed to connect to AI service.'}`, isStreaming: false }
+          ? { ...m, content: `⚠ Error: ${err.message || 'Failed to connect to Gemini.'}`, isStreaming: false }
           : m
         )
       );
@@ -219,8 +217,7 @@ export class AiChatbotComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   clearChat() {
     this.messages.set([{
-      id: 'welcome',
-      role: 'assistant',
+      id: 'welcome', role: 'assistant',
       content: 'Chat cleared. ARIA ready for new queries.',
       timestamp: new Date()
     }]);
